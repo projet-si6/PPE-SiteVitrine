@@ -1,0 +1,20 @@
+easy_admin:
+    entities:
+        # List the entity class name you want to manage
+        - App\Entity\Produit
+        - App\Entity\Categorie
+        - App\Entity\User
+
+    site_name: '<em style="font-size: 80%;">RoroLaBrocante. </em>'
+    
+    design:
+        # the value of this option can be any valid CSS color
+        brand_color: 'red'
+        
+        assets:
+            css:
+                #-'css/admin.css'
+            js:
+                #-'bundles/easyadmin/bootstrap-all.js'
+
+        rtl: false
