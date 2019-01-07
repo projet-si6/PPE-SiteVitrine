@@ -3,16 +3,21 @@
 namespace App\Controller;
 
 use App\Entity\Panier;
+use App\Entity\ModePayment;
 use App\Entity\IdentityUser;
+use App\Entity\PaymentOrder;
+use App\Entity\IdentityOrder;
 use App\Entity\LivraisonUser;
 use App\Entity\ModeLivraison;
-use App\Entity\ModePayment;
+use App\Entity\LivraisonOrder;
+use App\Entity\CommandeOrder;
 use App\Form\IdentityUserType;
 use App\Form\LivraisonUserType;
+use App\AJ\CommandeBundle\UniqRef;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -248,4 +253,93 @@ class CommanderController extends AbstractController
             'modeLivraison' => $modeLivraison,
         ]);
     }
+
+    /**
+     * @Route("/paypal/valider", name="paypal_valider")
+     */
+    public function paypal_valider(UserInterface $user, Request $request, ObjectManager $manager)
+    {
+        $session = new Session();
+        // récup la valeur de la livraison
+        $sessionModeLivraison = $session->get('modeLivraison');
+        $modeLivraison = $this->getDoctrine()
+                              ->getRepository(ModeLivraison::class)
+                              ->createQueryBuilder('c')
+                              ->where('c.id = :id')
+                              ->setParameter('id', $sessionModeLivraison)
+                              ->setMaxResults(1)
+                              ->getQuery()
+                              ->getSingleResult();
+                              
+        //Contenu de la transaction pour paypal
+        $totalPrix = 0;
+        $thisPanier = $user->getPanier();
+        $myArticles = $thisPanier->getArticles();
+        foreach ($myArticles as $article) {
+            $totalPrix = $totalPrix + $article->getPrix();
+        }
+        // Prix de livraison
+        $totalPrix = $totalPrix + $modeLivraison->getPrix();
+        $totalPrix = strval($totalPrix); //INT TO STR
+        $paymentOrder = new PaymentOrder();
+        $paymentOrder->setPaymentId("Pour le Paypal");
+        $paymentOrder->setStatus("approved");
+        $paymentOrder->setAmount($totalPrix);
+        $paymentOrder->setCurrency("EUR");
+        $paymentOrder->setCreatedAt(\DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s')));
+        $manager->persist($paymentOrder);
+    
+        //Création IdentityOrder
+        $identityOrder = new IdentityOrder();
+        $identityUser = $user->getIdentityUser();
+        $identityOrder->setPrenom($identityUser->getPrenom())
+                        ->setNom($identityUser->getNom())
+                        ->setEmail($identityUser->getEmail())
+                        ->setNumTel($identityUser->getNumTel());
+        $manager->persist($identityOrder);
+        //Création LivraisonOrder
+        $livraisonOrder = new LivraisonOrder();
+        $livraisonUser = $user->getLivraisonUser();
+        $livraisonOrder->setAdresse($livraisonUser->getAdresse())
+                        ->setPays($livraisonUser->getPays())
+                        ->setVille($livraisonUser->getVille())
+                        ->setCodePostal($livraisonUser->getCodePostal());
+        $manager->persist($livraisonOrder);
+        //Création de la commande
+        $ref = new UniqRef();
+        $reference = $ref->generateRef();
+        $dateNow = date('Y-m-d H:i:s');
+        $session = new Session();
+        $sessionModeLivraison = $session->get('modeLivraison');
+        $repolivraison = $this->getDoctrine()->getRepository(ModeLivraison::class);
+        $modeLivraison = $repolivraison->find($sessionModeLivraison);
+        $commande = new CommandeOrder();
+        $commande->setReference($reference)
+                    ->setStatus('En attente')
+                    ->setDate(\DateTime::createFromFormat('Y-m-d H:i:s', $dateNow))
+                    ->setUser($user)
+                    ->setLivraison($livraisonOrder)
+                    ->setIdentity($identityOrder)
+                    ->setPaymentOrder($paymentOrder)
+                    ->setModeLivraison($modeLivraison);
+                    
+        // recuperer le panier
+        $thisPanier = $user->getPanier();
+        $articlesPanier = $thisPanier->getArticles();
+        foreach ($articlesPanier as $article) {
+            // ajouter les articles du panier à la commande
+            $commande->addProduit($article);
+            // vider le panier
+            $thisPanier->removeArticle($article);
+            $manager->persist($thisPanier);
+        }
+        $manager->persist($commande);
+        $manager->flush();
+        //Delete Sessions
+        $session->set('modePayment', null);
+        $session->set('modeLivraison', null);
+         
+        return $this->redirectToRoute('index');
+    }
+
 }

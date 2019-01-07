@@ -48,11 +48,17 @@ class Produit
      */
     private $panier;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\CommandeOrder", mappedBy="produit")
+     */
+    private $commandeOrders;
+
     public function __construct()
     {
         $this->userId = new ArrayCollection();
         $this->paniers = new ArrayCollection();
         $this->commande = new ArrayCollection();
+        $this->commandeOrders = new ArrayCollection();
     }
 
     public function __toString()
@@ -133,6 +139,34 @@ class Produit
     public function setPanier(?Panier $panier): self
     {
         $this->panier = $panier;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|CommandeOrder[]
+     */
+    public function getCommandeOrders(): Collection
+    {
+        return $this->commandeOrders;
+    }
+
+    public function addCommandeOrder(CommandeOrder $commandeOrder): self
+    {
+        if (!$this->commandeOrders->contains($commandeOrder)) {
+            $this->commandeOrders[] = $commandeOrder;
+            $commandeOrder->addProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommandeOrder(CommandeOrder $commandeOrder): self
+    {
+        if ($this->commandeOrders->contains($commandeOrder)) {
+            $this->commandeOrders->removeElement($commandeOrder);
+            $commandeOrder->removeProduit($this);
+        }
 
         return $this;
     }
