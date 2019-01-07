@@ -35,6 +35,11 @@ class Panier
         $this->articles = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return (string) "Panier";
+    }
+
     public function getUser(): ?User
     {
         return $this->user;

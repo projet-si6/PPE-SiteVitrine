@@ -55,6 +55,11 @@ class Produit
         $this->commande = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return (string) "Article";
+    }
+
     public function getId(): ?int
     {
         return $this->id;

@@ -790,7 +790,7 @@ section
 {
 	width: 100%;
 	height: 167px;
-	background: #FFFFFF;
+	background: rgb(204, 94, 3);
 	z-index: 1;
 }
 .products_bar_links ul li:not(:last-of-type)
@@ -801,7 +801,7 @@ section
 {
 	font-size: 16px;
 	font-weight: 400;
-	color: #969696;
+	color: #ffffff;
 }
 .products_bar_links ul li a:hover,
 .products_bar_links ul li.active a
@@ -920,7 +920,7 @@ section
 }
 .products
 {
-	background: #FFFFFF;
+	background: rgb(204, 94, 3);
 	padding-bottom: 82px;
 }
 .product

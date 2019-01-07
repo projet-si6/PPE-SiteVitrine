@@ -120,7 +120,7 @@ class CommanderController extends AbstractController
             // session pour ajouter le mode de livraison
             }else{
                 $session->set('modeLivraison', $choice);
-                return $this->redirectToRoute('payement'); 
+                return $this->redirectToRoute('valider'); 
             }
         }
 

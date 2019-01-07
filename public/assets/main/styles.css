@@ -43,3 +43,6 @@ p.descriptionInfo{
     padding-bottom: 10%;
     color: rgb(5, 5, 5);
 }
+body{
+    background: rgba(248, 100, 14, 0.781);
+}

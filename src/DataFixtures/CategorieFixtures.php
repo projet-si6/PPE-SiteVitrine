@@ -10,33 +10,24 @@ class CategorieFixtures extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-        $Tshirt = new Categorie();
-        $Tshirt->setLibelle('T-shirt');
-        $manager->persist($Tshirt);
+        $meubles = new Categorie();
+        $meubles->setLibelle('Meubles');
+        $manager->persist($meubles);
 
-        $Pull = new Categorie();
-        $Pull->setLibelle('Pull');
-        $manager->persist($Pull);
+        $bibelots = new Categorie();
+        $bibelots->setLibelle('Bibelots');
+        $manager->persist($bibelots);
 
-        $Veste = new Categorie();
-        $Veste->setLibelle('Veste');
-        $manager->persist($Veste);
+        $vetements = new Categorie();
+        $vetements->setLibelle('Vetements');
+        $manager->persist($vetements);
 
-        $Pantalon = new Categorie();
-        $Pantalon->setLibelle('Pantalon');
-        $manager->persist($Pantalon);
-
-        $Short = new Categorie();
-        $Short->setLibelle('Short');
-        $manager->persist($Short);
 
         $manager->flush();
 
         // reference pour acceder avec une autre fixture
-        $this->addReference('Tshirt', $Tshirt);
-        $this->addReference('Pull', $Pull);
-        $this->addReference('Veste', $Veste);
-        $this->addReference('Pantalon', $Pantalon);
-        $this->addReference('Short', $Short);
+        $this->addReference('Meubles', $meubles);
+        $this->addReference('Bibelots', $bibelots);
+        $this->addReference('Vetements', $vetements);
     }
 }
